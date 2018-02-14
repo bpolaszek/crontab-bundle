@@ -1,0 +1,11 @@
+services:
+
+    BenTools\CrontabBundle\Command\CrontabUpdateCommand:
+        class: BenTools\CrontabBundle\Command\CrontabUpdateCommand
+        arguments:
+            - '@BenTools\CrontabBundle\CrontabGenerator'
+        tags:
+            - { name: console.command }
+
+    BenTools\CrontabBundle\CrontabGenerator:
+        class: BenTools\CrontabBundle\CrontabGenerator
