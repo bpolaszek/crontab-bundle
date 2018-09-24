@@ -16,7 +16,7 @@ class CrontabExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        $container->setParameter('bentools_crontab.dist_file', $config['dist_file']);
+        $container->setParameter('bentools_crontab.dist_file', isset($config['dist_file']) ? $config['dist_file'] : null);
 
 
         $loader = new YamlFileLoader($container, new FileLocator([__DIR__ . '/../Resources/config/']));

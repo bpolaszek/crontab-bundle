@@ -44,6 +44,11 @@ class CrontabUpdateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $distFile = $this->getContainer()->getParameter('bentools_crontab.dist_file');
+
+        if (null === $distFile) {
+            throw new \RuntimeException('Crontab prototype file "dist_file" is not configured.');
+        }
+
         if (!is_readable($distFile)) {
             throw new \RuntimeException(sprintf('%s is not readable', $distFile));
         }

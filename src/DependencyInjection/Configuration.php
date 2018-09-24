@@ -18,7 +18,6 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->scalarNode('dist_file')
-                ->isRequired()
                 ->end()
             ->end();
 
