@@ -7,11 +7,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CrontabGenerator
 {
     /**
-     * @param                    $content
+     * Array of commands
+     *
+     * @param array              $content
      * @param ContainerInterface $container
-     * @return string
+     * @return array
      */
-    public function replaceWithContainerParameters($content, ContainerInterface $container)
+    public function replaceWithContainerParameters(array $content, ContainerInterface $container): array
     {
         return preg_replace_callback('/\{%([^\}]*)\%}/', function ($matches) use ($container) {
             return $container->getParameter($matches[1]);

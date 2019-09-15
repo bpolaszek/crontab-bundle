@@ -53,20 +53,15 @@ class CrontabUpdateCommand extends ContainerAwareCommand
             throw new \RuntimeException(sprintf('%s is not readable', $distFile));
         }
 
-        $content = file_get_contents($distFile);
-        $replaced = $this->crontabGenerator->replaceWithContainerParameters($content, $this->getContainer());
-
+        $commandsToAdd = file($distFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $replacedCommandsToAdd = $this->crontabGenerator->replaceWithContainerParameters($commandsToAdd, $this->getContainer());
 
         if (true === $input->getOption('dump')) {
             $output->writeln('<info>Generated crontab:</info>');
-            $output->writeln($replaced);
+            $output->writeln(implode(PHP_EOL, $replacedCommandsToAdd));
         }
 
         $outputFile = null !== $input->getOption('output-file') ? $input->getOption('output-file') : $this->crontabGenerator->createTemporaryFile();
-
-        $output->write(sprintf('Writing crontab to <info>%s</info>... ', $outputFile));
-        $this->crontabGenerator->write($replaced, $outputFile);
-        $output->writeln('<info>Success!</info>');
 
         if (true !== $input->getOption('dry-run')) {
             $helper = $this->getHelper('question');
@@ -77,7 +72,38 @@ class CrontabUpdateCommand extends ContainerAwareCommand
                 return;
             }
 
-            $output->write('Applying new crontab... ');
+            $question = new ConfirmationQuestion('Replace crontab (y/N): ', false);
+            $replace = $helper->ask($input, $output, $question);
+
+            $output->writeln('Applying new crontab... ');
+
+            if (true === $replace) {
+                $crontabList = implode(PHP_EOL, $replacedCommandsToAdd);
+            } else {
+                $process = new Process('crontab -l');
+                $process->run();
+                $crontabList = $process->getOutput();
+                $nothingToUpdate = true;
+
+                foreach ($replacedCommandsToAdd as $command) {
+                    $notExists = false === strpos($crontabList, $command);
+                    $nothingToUpdate = $nothingToUpdate && !$notExists;
+
+                    if ($notExists) {
+                        $crontabList .= PHP_EOL.$command;
+                    } else {
+                        $output->writeln(sprintf('<info>Skipping command "%s" as it already exists</info>', $command));
+                    }
+                }
+
+                if ($nothingToUpdate) {
+                    $output->writeln('<info>Nothing to update</info>');
+                    return;
+                }
+            }
+
+            $output->write(sprintf('Writing crontab... ', $outputFile));
+            $this->crontabGenerator->write($crontabList, $outputFile);
             $process = new Process(sprintf('crontab %s', $outputFile));
             $process->run();
             $output->writeln('<info>Success!</info>');
