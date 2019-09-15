@@ -83,10 +83,12 @@ class CrontabUpdateCommand extends ContainerAwareCommand
                 $process = new Process('crontab -l');
                 $process->run();
                 $crontabList = $process->getOutput();
+                $explodedContabList = array_map('trim', explode(PHP_EOL, $crontabList));
                 $nothingToUpdate = true;
 
                 foreach ($replacedCommandsToAdd as $command) {
-                    $notExists = false === strpos($crontabList, $command);
+                    $command = trim($command);
+                    $notExists = !in_array($command, $explodedContabList);
                     $nothingToUpdate = $nothingToUpdate && !$notExists;
 
                     if ($notExists) {
