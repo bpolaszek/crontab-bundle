@@ -12,12 +12,13 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('bentools_crontab');
+        $treeBuilder = new TreeBuilder('bentools_crontab');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
                 ->scalarNode('dist_file')
+                ->defaultValue('%kernel.project_dir%/config/crontab.dist')
                 ->end()
             ->end();
 

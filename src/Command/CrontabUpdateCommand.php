@@ -3,14 +3,14 @@
 namespace BenTools\CrontabBundle\Command;
 
 use BenTools\CrontabBundle\CrontabGenerator;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Process\Process;
 
-class CrontabUpdateCommand extends ContainerAwareCommand
+class CrontabUpdateCommand extends Command
 {
     /**
      * @var CrontabGenerator
@@ -18,13 +18,21 @@ class CrontabUpdateCommand extends ContainerAwareCommand
     private $crontabGenerator;
 
     /**
+     * @var string
+     */
+    private $distFile;
+
+    /**
      * CrontabReplaceCommand constructor.
      * @param CrontabGenerator $crontabGenerator
+     * @param string           $distFile
      */
-    public function __construct(CrontabGenerator $crontabGenerator)
+    public function __construct(CrontabGenerator $crontabGenerator, string $distFile)
     {
-        $this->crontabGenerator = $crontabGenerator;
         parent::__construct('crontab:update');
+
+        $this->crontabGenerator = $crontabGenerator;
+        $this->distFile = $distFile;
     }
 
     /**
@@ -43,19 +51,12 @@ class CrontabUpdateCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $distFile = $this->getContainer()->getParameter('bentools_crontab.dist_file');
-
-        if (null === $distFile) {
-            throw new \RuntimeException('Crontab prototype file "dist_file" is not configured.');
+        if (!is_readable($this->distFile)) {
+            throw new \RuntimeException(sprintf('%s is not readable', $this->distFile));
         }
 
-        if (!is_readable($distFile)) {
-            throw new \RuntimeException(sprintf('%s is not readable', $distFile));
-        }
-
-        $content = file_get_contents($distFile);
-        $replaced = $this->crontabGenerator->replaceWithContainerParameters($content, $this->getContainer());
-
+        $content = file_get_contents($this->distFile);
+        $replaced = $this->crontabGenerator->replaceWithContainerParameters($content);
 
         if (true === $input->getOption('dump')) {
             $output->writeln('<info>Generated crontab:</info>');
@@ -82,5 +83,7 @@ class CrontabUpdateCommand extends ContainerAwareCommand
             $process->run();
             $output->writeln('<info>Success!</info>');
         }
+
+        return 0;
     }
 }

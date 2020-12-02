@@ -4,8 +4,11 @@ services:
         class: BenTools\CrontabBundle\Command\CrontabUpdateCommand
         arguments:
             - '@BenTools\CrontabBundle\CrontabGenerator'
+            - '%bentools_crontab.dist_file%'
         tags:
             - { name: console.command }
 
     BenTools\CrontabBundle\CrontabGenerator:
         class: BenTools\CrontabBundle\CrontabGenerator
+        arguments:
+            - '@service_container'
