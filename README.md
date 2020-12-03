@@ -1,4 +1,4 @@
-# Crontab Bundle
+# Crontab Bundle ![CI Workflow](https://github.com/bpolaszek/crontab-bundle/workflows/CI%20Workflow/badge.svg)
 
 An easy way to generate a crontab based on the application path.
 
