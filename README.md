@@ -2,34 +2,44 @@
 
 An easy way to generate a crontab based on the application path.
 
-Unlike similar Symfony bundles, this one does not provide a worker, it really updates the crontab.
+Unlike similar Symfony bundles, this one does not provide a worker, it _actually_ replaces the user's crontab.
+
+⚠️ Do not use this if your user's crontab may by altered by another process!
 
 ## Installation
 
-```bash
-composer require bentools/crontab-bundle 1.0.x-dev
-```
-
-Then add the bundle into your kernel (you've done that before).
-
-Configure where your sample crontab will be located:
-
-```yaml
-bentools_crontab:
-    dist_file: '%kernel.project_dir%/config/crontab.dist'
-```
-
-## Usage
-
-Create a sample crontab in your project:
+This bundle is compatible with Symfony 4/5+. Use `0.1.*` tag for earlier versions compatibility.
 
 ```bash
-# app/config/crontab.dist or config/crontab.dist for instance
-
-0 0 * * * php {%kernel.project_dir%}/bin/console app:test --no-interaction -vv >> {%kernel.project_dir%}/var/log/app_test.log 2>&1
+composer require bentools/crontab-bundle 0.2.*
 ```
 
-As you can see, `{%kernel.project_dir%}` is a container parameter. We will replace it with its current value:
+With Symfony Flex, you're already done! 
+
+### Usage
+
+Create a sample crontab in `config/crontab.dist`:
+
+```bash
+# config/crontab.dist
+
+0 0 * * * php {%kernel.project_dir%}/bin/console your:favorite:command
+```
+
+As you can see, `{%kernel.project_dir%}` is a container parameter. 
+It will be replaced at runtime with its current value. You can use any container parameter wrapped with curly braces.
+
+### Preview
+
+This will give you a preview of your crontab:
+
+```bash
+php bin/console crontab:update --dry-run --dump
+```
+
+### Apply
+
+To apply your crontab, run this:
 
 ```bash
 php bin/console crontab:update
@@ -37,7 +47,7 @@ php bin/console crontab:update
 
 Now if you execute `crontab -l` in your shell you should see something like this:
 ```bash
-0 0 * * * php /var/www/my_project/bin/console app:test --no-interaction -vv >> /var/www/my_project/var/log/app_test.log 2>&1
+0 0 * * * php /home/me/my-project/bin/console your:favorite:command
 ```
 
 ## FAQ
@@ -46,11 +56,20 @@ Now if you execute `crontab -l` in your shell you should see something like this
 
 Yes.
 
+#### I don't want the dist file to be `config/crontab.dist`. Can I change that?
+
+Sure: create a `config/packages/bentools_crontab.yaml` and change the `dist_file` parameter:
+
+```yaml
+bentools_crontab:
+    dist_file: '%env(CRONTAB_SAMPLE_FILE)%' # That's an example.
+```
+
 #### What are the command options?
 ```bash
 --no-interaction # Skip confirmation question
 --dry-run # Do not update crontab for real
---output-file=/path/to/generated_crontab # Change output file (defaults to temporary)
+--output-file=/path/to/generated_crontab # Change output file (which is a tmp file by default)
 --dump # Show generated crontab content
 ```
 
@@ -60,13 +79,9 @@ Yes. Use this bundle only if you consider it to be the only crontab entry point.
 
 ## Tests
 
-Ooops...
-
-I know, there aren't tests for the moment. 
-
-Testing Symfony commands and processes are a real pain and a PR would really help. 
-
-I'm using it with Symfony 4+, but there's no reason it won't work on older versions.
+```bash
+./vendor/bin/pest
+```
 
 ## License
 
