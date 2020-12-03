@@ -7,20 +7,28 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CrontabGenerator
 {
     /**
-     * @param                    $content
-     * @param ContainerInterface $container
-     * @return string
+     * @var ContainerInterface
      */
-    public function replaceWithContainerParameters($content, ContainerInterface $container)
+    private $container;
+
+    public function __construct(ContainerInterface $container)
     {
-        return preg_replace_callback('/\{%([^\}]*)\%}/', function ($matches) use ($container) {
-            return $container->getParameter($matches[1]);
-        }, $content);
+        $this->container = $container;
     }
 
     /**
      * @param string $content
-     * @param null   $dir
+     * @return string
+     */
+    public function replaceWithContainerParameters($content)
+    {
+        return preg_replace_callback('/\{%([^\}]*)\%}/', function ($matches) {
+            return $this->container->getParameter($matches[1]);
+        }, $content);
+    }
+
+    /**
+     * @param string|null $dir
      * @return string
      */
     public function createTemporaryFile($dir = null)
@@ -32,8 +40,8 @@ class CrontabGenerator
     }
 
     /**
-     * @param $content
-     * @param $filename
+     * @param string $content
+     * @param string $filename
      * @throws \RuntimeException
      */
     public function write($content, $filename)
