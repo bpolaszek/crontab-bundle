@@ -1,0 +1,1 @@
+@reboot {%kernel.project_dir%}/bin/console app:hello-world
