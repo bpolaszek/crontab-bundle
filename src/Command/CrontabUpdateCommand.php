@@ -79,7 +79,7 @@ class CrontabUpdateCommand extends Command
             }
 
             $output->write('Applying new crontab... ');
-            $process = new Process(sprintf('crontab %s', $outputFile));
+            $process = new Process(['crontab', $outputFile]);
             $process->run();
             $output->writeln('<info>Success!</info>');
         }
