@@ -6,6 +6,9 @@ Unlike similar Symfony bundles, this one does not provide a worker, it _actually
 
 ⚠️ Do not use this if your user's crontab may by altered by another process!
 
+> [!IMPORTANT]  
+> This repository is no longer maintained and may be removed in a near future. You may consider creating a fork if you still require it.
+
 ## Installation
 
 This bundle is compatible with Symfony 4/5+. Use `0.1.*` tag for earlier versions compatibility.
